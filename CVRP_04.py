@@ -48,14 +48,35 @@ def read_txt_file(filename):
 
     return veh_num, capacity, custnum, coordx, coordy, demand, readytime, duedate, servicetime
 
+# Vamos a usar la distancia Euclidea entre dos ciudades
+def distance_euclidean_AB(A: (float, float), B: (float, float)) -> float:
+    return ((A[0] - B[0])**2 + (A[1] - B[1])**2) ** 0.5
+
+# Funcion para calcular la distancia entre dos ciudades
+def distance(city1, city2):
+    # Aqui es donde cambio el tipo de distancia que quiero usar. En este fichero solo tenemos disponible la euclidea
+    return distance_euclidean_AB(city1, city2)
+
+# Funcion para calcular la distancia total de una ruta
+def total_distance(route, diction):
+    total = 0
+    for i in range(len(route) - 1):
+        total += distance(diction[route[i]], diction[route[i+1]])
+    return total
+
+def objective_function(solution, diction):
+    return total_distance(solution, diction)
+    
+
+
+
+# Main function
 def main():
 
     veh_num, capacity, custnum, coordx, coordy, demand, readytime, duedate, servicetime = read_txt_file("C:\\Users\\Pablo\\OneDrive - UNIVERSIDAD DE SEVILLA\\MOIGE\\CUATRI2\\MOPG\\Python\\07 CVRP\\CVRP\\Datos.txt")
 
-    for i in range(len(demand)):
-        print("demand:\n", demand[i])
+    dict_xy = {custnum[i]: (coordx[i], coordy[i]) for i in range(len(custnum))}
     
-    print("Len:\n", len(demand))
 
 # Run the main function
 if __name__ == '__main__':
