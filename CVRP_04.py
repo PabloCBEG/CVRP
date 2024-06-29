@@ -49,7 +49,7 @@ def read_txt_file(filename):
     return veh_num, capacity, custnum, coordx, coordy, demand, readytime, duedate, servicetime
 
 # Vamos a usar la distancia Euclidea entre dos ciudades
-def distance_euclidean_AB(A: (float, float), B: (float, float)) -> float:
+def distance_euclidean_AB(A, B):
     return ((A[0] - B[0])**2 + (A[1] - B[1])**2) ** 0.5
 
 # Funcion para calcular la distancia entre dos ciudades
