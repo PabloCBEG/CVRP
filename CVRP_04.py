@@ -38,16 +38,6 @@ def read_txt_file(filename):
                 duedate.append(     float   (elements[5]))  # Due date of each customer (won't be using it for CVRP)
                 servicetime.append( float   (elements[6]))  # Service time of each customer
 
-                """class Client[count-9]:
-                    def __init__(self, custnum, coordx, coordy, demand, readytime, duedate, servicetime):
-                        self.custnum     = custnum[count-9]
-                        self.coordx      = coordx[count-9]
-                        self.coordy      = coordy[count-9]
-                        self.demand      = demand[count-9]
-                        self.readytime   = readytime[count-9]
-                        self.duedate     = duedate[count-9]
-                        self.servicetime = servicetime[count-9]"""
-
             count += 1
     
     # extracted_data = [veh_num, capacity, custnum, coordx, coordy, demand, readytime, duedate, servicetime]
@@ -206,52 +196,7 @@ def vnd_for_cvrp(route, dict_xy):
 
     return best_route, best_distance
 
-"""def choose_route(dist_matrix, veh_num, capacity, demand):
-    num_points = dist_matrix.shape[0]
-    visited = np.zeros(num_points, dtype=bool)
-    routes = []
-    # tiemposervicio = list(np.zeros(len(servicetime), dtype=float))
-    # deliverytimes = []
-    # readytimeaux = readytime.copy()
-    # readytimeaux.pop(0)
-
-    while np.sum(visited) < num_points and len(routes) < veh_num:
-        current_node = 0
-        carga = 0
-        route = [current_node]
-        visited[current_node] = True
-
-        while carga < capacity:
-            current = route[-1]
-            nearest = None
-
-            for neighbor in np.where(~visited)[0]:
-                if carga + demand[neighbor] <= capacity:
-                    nearest = neighbor
-                    carga += demand[neighbor]
-
-            if nearest is None:
-                break
-
-            if carga > capacity:
-                break
-
-            route.append(nearest)
-            visited[nearest] = True
-
-        routes.append(route)
-
-    return routes"""
-
 def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
-    """while True:
-        routes = choose_route(distanceMatrix, veh_num, capacity, demand)
-        route = min(routes, key=(lambda x: objective_function(x, dict_xy)))
-        if objective_function(route, dict_xy) < best_distance:
-            best_route = route.copy()
-            best_distance = objective_function(route, dict_xy)
-        else:
-            break"""
     num_points = dist_matrix.shape[0]
     visited = np.zeros(num_points, dtype=bool)
     routes = []
@@ -295,24 +240,6 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
             print("Elemento a eliminar: ", route_aux2[i], "\n")
             route.remove(route_aux2[i])
 
-        """while carga < capacity:
-            current = new_route[-1]
-            nearest = None
-
-            for neighbor in np.where(~visited)[0]:
-                if carga + demand[neighbor] <= capacity:
-                    nearest = neighbor
-                    carga += demand[neighbor]
-
-            if nearest is None:
-                break
-
-            if carga > capacity:
-                break
-
-            route.append(nearest)
-            visited[nearest] = True"""
-
     return routes, carga
 
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
@@ -347,11 +274,6 @@ def main():
     plt.title('Convergencia a la mejor solucion obtenida')
     plt.figure(2)
     plot_problem(dict_xy)
-    """plot_solution(best_route, dict_xy)
-    plt.title('Mapa de ciudades y mejor ruta obtenida')
-    # plt.show()
-    print("Best route:", best_route)
-    print("Best distance:", best_distance)"""
 
     print("Routes:", routes)
     plot_solution(routes, dict_xy)
