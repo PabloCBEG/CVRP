@@ -201,10 +201,11 @@ def vnd_for_cvrp(route, dict_xy):
         # plt.show()
 
     print("01 Ha ejecutado correctamente VND\n")
+    print("Ruta obtenida: ", best_route, "\n")
 
     return best_route, best_distance
 
-def choose_route(dist_matrix, veh_num, capacity, demand):
+"""def choose_route(dist_matrix, veh_num, capacity, demand):
     num_points = dist_matrix.shape[0]
     visited = np.zeros(num_points, dtype=bool)
     routes = []
@@ -239,7 +240,7 @@ def choose_route(dist_matrix, veh_num, capacity, demand):
 
         routes.append(route)
 
-    return routes
+    return routes"""
 
 def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
     """while True:
@@ -253,7 +254,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
     num_points = dist_matrix.shape[0]
     visited = np.zeros(num_points, dtype=bool)
     routes = []
-    route_aux = []
+    # route_aux = []
     current_node = 0
     carga = np.zeros(veh_num, dtype=int)
     # route = [current_node]
@@ -264,13 +265,14 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
 
     while np.sum(visited) < num_points and len(routes) < veh_num:
         new_route, new_distance = vnd_for_cvrp(route, dict_xy)
+        route_aux = []
 
-        print("Tamaño de la nueva ruta: %d", len(new_route))
+        print("Tamaño de la nueva ruta: ", len(new_route), "\n")
 
-        print("02 Ha ejecutado %d veces el VND\n", load_index)
+        print("02 Ha ejecutado ", load_index, " veces el VND\n")
 
         for i in range(len(new_route)):
-            if carga + demand[new_route[i]] <= capacity:
+            if carga[load_index] + demand[new_route[i]] <= capacity:
                 route_aux.append(new_route[i])
                 carga[load_index] += demand[new_route[i]]
                 visited[new_route[i]] = True
@@ -283,6 +285,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
         # len_aux = len(route)
         # Remove visited clients from pending clients route
         for i in range(len(route_aux)):
+            print("Elemento a eliminar: ", route_aux[i], "\n")
             route.remove(route_aux[i])
 
         """while carga < capacity:
