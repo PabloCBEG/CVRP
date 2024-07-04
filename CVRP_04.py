@@ -120,15 +120,16 @@ def plot_problem(dic_customers: dict):
     X.append(X[0]) # Initial position X 
     Y.append(Y[0]) # Initial position Y
     plt.plot(X,Y,'o')
-    for customer in customers:  # Show customer number on each customer
+    for customer in customers:
         plt.annotate(customer, (dic_customers[customer][0]+0.01, dic_customers[customer][1]))
 
-def plot_solution(solution: list, dic_cities: dict):
-    X = [dic_cities[city][0] for city in solution]
-    Y = [dic_cities[city][1] for city in solution]
-    X.append(X[0])
-    Y.append(Y[0])
-    plt.plot(X,Y)
+def plot_solution(solution: list, dic_customers: dict):
+    for route in solution:
+        X = [dic_customers[customer][0] for customer in route]
+        Y = [dic_customers[customer][1] for customer in route]
+        X.append(X[0])
+        Y.append(Y[0])
+        plt.plot(X,Y)
 
 # Funcion para intercambiar dos ciudades en una ruta
 def swap(route, i, j):
@@ -306,7 +307,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
             route.append(nearest)
             visited[nearest] = True"""
 
-    return routes
+    return routes, carga
 
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
 
@@ -325,10 +326,12 @@ def main():
 
     # best_route, best_distance = vnd_for_cvrp(initial_route, dict_xy)
 
-    routes = cvrp_solver(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
+    routes, cargas = cvrp_solver(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
 
     # Plotting the problem
     # plot_problem(dict_xy)
+
+    print("Vector de cargas: ", cargas)
 
     plt.figure(1)
     # plt.plot(range(0,len(current_distance_array)), current_distance_array, marker='o')
