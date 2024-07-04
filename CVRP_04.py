@@ -266,7 +266,8 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
 
     while np.sum(visited) < num_points and len(routes) < veh_num:
         new_route, new_distance = vnd_for_cvrp(route, dict_xy)
-        route_aux = []
+        route_aux = [0]
+        route_aux2 = []
 
         print("Tamaño de la nueva ruta: ", len(new_route), "\n")
 
@@ -278,6 +279,9 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
                 carga[load_index] += demand[new_route[i]]
                 visited[new_route[i]] = True
             else:
+                route_aux2 = route_aux.copy()
+                route_aux2.remove(0)
+                route_aux.append(0)
                 break
         
         load_index += 1
@@ -285,9 +289,9 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
 
         # len_aux = len(route)
         # Remove visited clients from pending clients route
-        for i in range(len(route_aux)):
-            print("Elemento a eliminar: ", route_aux[i], "\n")
-            route.remove(route_aux[i])
+        for i in range(len(route_aux2)):
+            print("Elemento a eliminar: ", route_aux2[i], "\n")
+            route.remove(route_aux2[i])
 
         """while carga < capacity:
             current = new_route[-1]
@@ -347,7 +351,7 @@ def main():
     print("Best route:", best_route)
     print("Best distance:", best_distance)"""
 
-    print("Initial Routes:", routes)
+    print("Routes:", routes)
     plot_solution(routes, dict_xy)
 
     plt.show()
