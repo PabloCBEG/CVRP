@@ -202,7 +202,7 @@ def vnd_for_cvrp(route, dict_xy):
         # plt.show()
 
     print("01 Ha ejecutado correctamente VND\n")
-    print("Ruta obtenida: ", best_route, "\n")
+    print("Ruta obtenida a partir de los clientes restantes: ", best_route, "\n")
 
     return best_route, best_distance
 
@@ -274,21 +274,23 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
         print("02 Ha ejecutado ", load_index, " veces el VND\n")
 
         for i in range(len(new_route)):
-            if carga[load_index] + demand[new_route[i]] <= capacity:
-                route_aux.append(new_route[i])
-                carga[load_index] += demand[new_route[i]]
-                visited[new_route[i]] = True
-            else:
-                route_aux2 = route_aux.copy()
-                route_aux2.remove(0)
-                route_aux.append(0)
-                break
+            if new_route[i] != 0:
+                if carga[load_index] + demand[new_route[i]] <= capacity:
+                    route_aux.append(new_route[i])
+                    carga[load_index] += demand[new_route[i]]
+                    visited[new_route[i]] = True
+                else:
+                    route_aux2 = route_aux.copy()
+                    route_aux2.remove(0)
+                    route_aux.append(0)
+                    break
+            else: i += 1
         
         load_index += 1
         routes.append(route_aux)
 
         # len_aux = len(route)
-        # Remove visited clients from pending clients route
+        # Remove visited clients from pending clients neighbourhood
         for i in range(len(route_aux2)):
             print("Elemento a eliminar: ", route_aux2[i], "\n")
             route.remove(route_aux2[i])
