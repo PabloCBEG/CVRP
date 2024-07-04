@@ -200,6 +200,8 @@ def vnd_for_cvrp(route, dict_xy):
         # plot_solution(current_route, dict_xy)
         # plt.show()
 
+    print("01 Ha ejecutado correctamente VND\n")
+
     return best_route, best_distance
 
 def choose_route(dist_matrix, veh_num, capacity, demand):
@@ -239,6 +241,70 @@ def choose_route(dist_matrix, veh_num, capacity, demand):
 
     return routes
 
+def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
+    """while True:
+        routes = choose_route(distanceMatrix, veh_num, capacity, demand)
+        route = min(routes, key=(lambda x: objective_function(x, dict_xy)))
+        if objective_function(route, dict_xy) < best_distance:
+            best_route = route.copy()
+            best_distance = objective_function(route, dict_xy)
+        else:
+            break"""
+    num_points = dist_matrix.shape[0]
+    visited = np.zeros(num_points, dtype=bool)
+    routes = []
+    route_aux = []
+    current_node = 0
+    carga = np.zeros(veh_num, dtype=int)
+    # route = [current_node]
+    visited[current_node] = True
+    load_index = 0
+
+    print("00 Ha entrado en cvrp_solver\n")
+
+    while np.sum(visited) < num_points and len(routes) < veh_num:
+        new_route, new_distance = vnd_for_cvrp(route, dict_xy)
+
+        print("Tamaño de la nueva ruta: %d", len(new_route))
+
+        print("02 Ha ejecutado %d veces el VND\n", load_index)
+
+        for i in range(len(new_route)):
+            if carga + demand[new_route[i]] <= capacity:
+                route_aux.append(new_route[i])
+                carga[load_index] += demand[new_route[i]]
+                visited[new_route[i]] = True
+            else:
+                break
+        
+        load_index += 1
+        routes.append(route_aux)
+
+        # len_aux = len(route)
+        # Remove visited clients from pending clients route
+        for i in range(len(route_aux)):
+            route.remove(route_aux[i])
+
+        """while carga < capacity:
+            current = new_route[-1]
+            nearest = None
+
+            for neighbor in np.where(~visited)[0]:
+                if carga + demand[neighbor] <= capacity:
+                    nearest = neighbor
+                    carga += demand[neighbor]
+
+            if nearest is None:
+                break
+
+            if carga > capacity:
+                break
+
+            route.append(nearest)
+            visited[nearest] = True"""
+
+    return routes
+
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
 
 # Main function
@@ -254,7 +320,9 @@ def main():
 
     # print("Initial route: ", initial_route)
 
-    best_route, best_distance = vnd_for_cvrp(initial_route, dict_xy)
+    # best_route, best_distance = vnd_for_cvrp(initial_route, dict_xy)
+
+    routes = cvrp_solver(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
 
     # Plotting the problem
     # plot_problem(dict_xy)
@@ -267,11 +335,14 @@ def main():
     plt.title('Convergencia a la mejor solucion obtenida')
     plt.figure(2)
     plot_problem(dict_xy)
-    plot_solution(best_route, dict_xy)
+    """plot_solution(best_route, dict_xy)
     plt.title('Mapa de ciudades y mejor ruta obtenida')
     # plt.show()
     print("Best route:", best_route)
-    print("Best distance:", best_distance)
+    print("Best distance:", best_distance)"""
+
+    print("Initial Routes:", routes)
+    plot_solution(routes, dict_xy)
 
     plt.show()
     
