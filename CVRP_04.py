@@ -4,6 +4,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import pandas as pd
 
 def read_txt_file(filename):
     """
@@ -122,6 +123,122 @@ def plot_problem(dic_customers: dict):
     for customer in customers:  # Show customer number on each customer
         plt.annotate(customer, (dic_customers[customer][0]+0.01, dic_customers[customer][1]))
 
+def plot_solution(solution: list, dic_cities: dict):
+    X = [dic_cities[city][0] for city in solution]
+    Y = [dic_cities[city][1] for city in solution]
+    X.append(X[0])
+    Y.append(Y[0])
+    plt.plot(X,Y)
+
+# Funcion para intercambiar dos ciudades en una ruta
+def swap(route, i, j):
+    route[i], route[j] = route[j], route[i]
+
+# Funcion para generar una vecindad SWAP a partir de una ruta
+def neighbourhood_swap(current_solution):
+    neighbourhood = []
+    for i in range(len(current_solution)):
+        for j in range(i+1, len(current_solution)):
+            new_route = current_solution.copy()
+            swap(new_route, i, j)
+            neighbourhood.append(new_route)
+    return neighbourhood
+
+# Funcion para generar una vecindad INSERTION a partir de una ruta
+def neighbourhood_insertion(current_solution):
+    neighbourhood = []
+    for i in range(len(current_solution)):
+        for j in range(len(current_solution)):
+            if i != j:
+                neighbour = current_solution[:]
+                neighbour.remove(current_solution[i])
+                neighbour.insert(j, current_solution[i])
+                neighbourhood.append(neighbour)
+    return neighbourhood
+
+vswap = []
+vinsertion = []
+neighbourhood_list = [vswap, vinsertion]
+umax = len(neighbourhood_list)
+
+current_distance_array = []
+color_plot_array = ['r', 'g', 'b', 'k', 'y', 'p', 'm']
+u_array_for_plotting = []
+label_list_for_plotting = ['Swap neighbourhood', 'Insertion neighbourhood','Last found solution']
+
+def vnd_for_cvrp(route, dict_xy):
+
+    current_route = route.copy()
+    best_route = route.copy()
+    best_distance = objective_function(current_route, dict_xy)
+    available_neigbourhoods = [neighbourhood_swap, neighbourhood_insertion]
+
+    u = 1                                                                           # u es el numero del vecindario en que estoy buscando
+    while u <= umax:                                                                # en este caso tenemos solo 2 vecindarios, swap (1) e insertion (2)
+                                                                                    # de manera que umax = 2
+        neighbourhood_list[u-1] = available_neigbourhoods[u-1](current_route)       # genero el vecindario correspondiente
+
+        current_route = min(neighbourhood_list[u-1], key=(lambda x: objective_function(x, dict_xy)))
+        current_distance = objective_function(current_route, dict_xy)
+
+        current_distance_array.append(round(current_distance,2))
+
+        if current_distance < best_distance:
+            best_route = current_route.copy()
+            best_distance = current_distance
+        
+        else:
+            u += 1
+
+        u_array_for_plotting.append(u)
+
+        # SI se quiere visualizar la evolucion de la solucion,
+        # "descomentar" las 4 lineas posteriores. Habra que ir cerrando la ventana de plot para que se siga ejecutando
+        # (esto permite apreciar como va cambiando)
+        # plt.figure(3)
+        # plot_problem(dict_xy)
+        # plot_solution(current_route, dict_xy)
+        # plt.show()
+
+    return best_route, best_distance
+
+def choose_route(dist_matrix, veh_num, capacity, demand):
+    num_points = dist_matrix.shape[0]
+    visited = np.zeros(num_points, dtype=bool)
+    routes = []
+    # tiemposervicio = list(np.zeros(len(servicetime), dtype=float))
+    # deliverytimes = []
+    # readytimeaux = readytime.copy()
+    # readytimeaux.pop(0)
+
+    while np.sum(visited) < num_points and len(routes) < veh_num:
+        current_node = 0
+        carga = 0
+        route = [current_node]
+        visited[current_node] = True
+
+        while carga < capacity:
+            current = route[-1]
+            nearest = None
+
+            for neighbor in np.where(~visited)[0]:
+                if carga + demand[neighbor] <= capacity:
+                    nearest = neighbor
+                    carga += demand[neighbor]
+
+            if nearest is None:
+                break
+
+            if carga > capacity:
+                break
+
+            route.append(nearest)
+            visited[nearest] = True
+
+        routes.append(route)
+
+    return routes
+
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
 
 # Main function
@@ -131,8 +248,31 @@ def main():
 
     dict_xy = {custnum[i]: (coordx[i], coordy[i]) for i in range(len(custnum))}
 
+    distanceMatrix = calculate_distance_matrix(list(zip(coordx, coordy)))
+
+    initial_route = [i for i in range(len(custnum))]
+
+    # print("Initial route: ", initial_route)
+
+    best_route, best_distance = vnd_for_cvrp(initial_route, dict_xy)
+
     # Plotting the problem
+    # plot_problem(dict_xy)
+
+    plt.figure(1)
+    # plt.plot(range(0,len(current_distance_array)), current_distance_array, marker='o')
+    for indice in range(0,len(current_distance_array)):
+        plt.plot(indice, current_distance_array[indice], marker='o', color=color_plot_array[u_array_for_plotting[indice]-1])
+    # label=label_list_for_plotting[u_array_for_plotting[indice]-1]
+    plt.title('Convergencia a la mejor solucion obtenida')
+    plt.figure(2)
     plot_problem(dict_xy)
+    plot_solution(best_route, dict_xy)
+    plt.title('Mapa de ciudades y mejor ruta obtenida')
+    # plt.show()
+    print("Best route:", best_route)
+    print("Best distance:", best_distance)
+
     plt.show()
     
 
