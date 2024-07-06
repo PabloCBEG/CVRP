@@ -89,10 +89,7 @@ def calculate_distance(coordinates, i, j):
     return np.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 # Review if total distance is correctly calculated
-def calculate_total_distance(route, dist_matrix):
-    """
-    Calculate the total distance of a given route using the distance matrix.
-    """
+"""def calculate_total_distance(route, dist_matrix):
     total_distance = 0
     num_points = len(route)
 
@@ -101,7 +98,7 @@ def calculate_total_distance(route, dist_matrix):
         next_node = route[i + 1]
         total_distance += dist_matrix[current_node, next_node]
 
-    return total_distance
+    return total_distance"""
 
 def plot_problem(dic_customers: dict):
     customers = list(dic_customers.keys()) # List of customers to visit
@@ -191,7 +188,7 @@ def vnd_for_cvrp(route, dict_xy):
         # plot_solution(current_route, dict_xy)
         # plt.show()
 
-    print("01 Ha ejecutado correctamente VND\n")
+    # print("01 Ha ejecutado correctamente VND\n")
     print("Ruta obtenida a partir de los clientes restantes: ", best_route, "\n")
 
     return best_route, best_distance
@@ -207,7 +204,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
     visited[current_node] = True
     load_index = 0
 
-    print("00 Ha entrado en cvrp_solver\n")
+    # print("00 Ha entrado en cvrp_solver\n")
 
     while np.sum(visited) < num_points and len(routes) < veh_num:
         new_route, new_distance = vnd_for_cvrp(route, dict_xy)
@@ -216,7 +213,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
 
         print("Tamaño de la nueva ruta: ", len(new_route), "\n")
 
-        print("02 Ha ejecutado ", load_index, " veces el VND\n")
+        # print("02 Ha ejecutado ", load_index, " veces el VND\n")
 
         for i in range(len(new_route)):
             if new_route[i] != 0:
@@ -237,10 +234,33 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
         # len_aux = len(route)
         # Remove visited clients from pending clients neighbourhood
         for i in range(len(route_aux2)):
-            print("Elemento a eliminar: ", route_aux2[i], "\n")
+            # print("Elemento a eliminar: ", route_aux2[i], "\n")
             route.remove(route_aux2[i])
 
     return routes, carga
+
+def local_search_for_cvrp(initial_solution, dict_xy=None):
+    current_solution_value = objective_function(initial_solution, dict_xy)
+    current_solution=initial_solution[:]
+    
+    neighbourhood=[]
+        
+    while True:
+        
+        neighbourhood = neighbourhood_swap(current_solution)
+    
+        new_solution = min(neighbourhood, key = (lambda x: objective_function(x, dict_xy)))
+        new_solution_value = objective_function(new_solution, dict_xy)
+        
+        if new_solution_value < current_solution_value:
+            current_solution_value = new_solution_value
+            current_solution = new_solution
+            neighbourhood=[]
+            # print(current_solution, current_solution_value)
+        else:
+            break
+        
+    return current_solution, current_solution_value
 
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
 
@@ -264,7 +284,7 @@ def main():
     # Plotting the problem
     # plot_problem(dict_xy)
 
-    print("Vector de cargas: ", cargas)
+    print("Vector de cargas: ", cargas, "\n")
 
     plt.figure(1)
     # plt.plot(range(0,len(current_distance_array)), current_distance_array, marker='o')
