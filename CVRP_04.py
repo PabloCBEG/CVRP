@@ -3,8 +3,11 @@
 #import libraries
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+from time import time
 import pandas as pd
+
+vehicle_cost = 100
+avgspeed = 1
 
 def read_txt_file(filename):
     """
@@ -193,7 +196,7 @@ def vnd_for_cvrp(route, dict_xy):
 
     return best_route, best_distance
 
-def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
+def cvrp_solver_vnd(route, dict_xy, dist_matrix, veh_num, capacity, demand):
     num_points = dist_matrix.shape[0]
     visited = np.zeros(num_points, dtype=bool)
     routes = []
@@ -204,23 +207,23 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
     visited[current_node] = True
     load_index = 0
 
-    # print("00 Ha entrado en cvrp_solver\n")
+    # print("00 Ha entrado en cvrp_solver_vnd\n")
 
     while np.sum(visited) < num_points and len(routes) < veh_num:
-        new_route, new_distance = vnd_for_cvrp(route, dict_xy)
+        new_route_vnd, new_distance_cvrp = vnd_for_cvrp(route, dict_xy)
         route_aux = [0]
         route_aux2 = []
 
-        print("Tamaño de la nueva ruta: ", len(new_route), "\n")
+        print("Tamaño de la nueva ruta: ", len(new_route_vnd), "\n")
 
         # print("02 Ha ejecutado ", load_index, " veces el VND\n")
 
-        for i in range(len(new_route)):
-            if new_route[i] != 0:
-                if carga[load_index] + demand[new_route[i]] <= capacity:
-                    route_aux.append(new_route[i])
-                    carga[load_index] += demand[new_route[i]]
-                    visited[new_route[i]] = True
+        for i in range(len(new_route_vnd)):
+            if new_route_vnd[i] != 0:
+                if carga[load_index] + demand[new_route_vnd[i]] <= capacity:
+                    route_aux.append(new_route_vnd[i])
+                    carga[load_index] += demand[new_route_vnd[i]]
+                    visited[new_route_vnd[i]] = True
                 else:
                     route_aux2 = route_aux.copy()
                     route_aux2.remove(0)
@@ -239,7 +242,7 @@ def cvrp_solver(route, dict_xy, dist_matrix, veh_num, capacity, demand):
 
     return routes, carga
 
-def local_search_for_cvrp(initial_solution, dict_xy=None):
+def local_search_for_cvrp(initial_solution, dict_xy):
     current_solution_value = objective_function(initial_solution, dict_xy)
     current_solution=initial_solution[:]
     
@@ -262,10 +265,71 @@ def local_search_for_cvrp(initial_solution, dict_xy=None):
         
     return current_solution, current_solution_value
 
+def cvrp_solver_ls(route, dict_xy, dist_matrix, veh_num, capacity, demand):
+    num_points = dist_matrix.shape[0]
+    visited = np.zeros(num_points, dtype=bool)
+    routes = []
+    # route_aux = []
+    current_node = 0
+    carga = np.zeros(veh_num, dtype=int)
+    # route = [current_node]
+    visited[current_node] = True
+    load_index = 0
+
+    # print("00 Ha entrado en cvrp_solver_ls\n")
+
+    while np.sum(visited) < num_points and len(routes) < veh_num:
+        new_route_ls, new_distance_ls = local_search_for_cvrp(route, dict_xy)
+        route_aux = [0]
+        route_aux2 = []
+
+        print("Tamaño de la nueva ruta: ", len(new_route_ls), "\n")
+
+        # print("02 Ha ejecutado ", load_index, " veces el LS\n")
+
+        for i in range(len(new_route_ls)):
+            if new_route_ls[i] != 0:
+                if carga[load_index] + demand[new_route_ls[i]] <= capacity:
+                    route_aux.append(new_route_ls[i])
+                    carga[load_index] += demand[new_route_ls[i]]
+                    visited[new_route_ls[i]] = True
+                else:
+                    route_aux2 = route_aux.copy()
+                    route_aux2.remove(0)
+                    route_aux.append(0)
+                    break
+            else: i += 1
+        
+        load_index += 1
+        routes.append(route_aux)
+
+        # len_aux = len(route)
+        # Remove visited clients from pending clients neighbourhood
+        for i in range(len(route_aux2)):
+            # print("Elemento a eliminar: ", route_aux2[i], "\n")
+            route.remove(route_aux2[i])
+
+    return routes, carga
+
 # Have in mind: auxiliary functions shall be put in a separate file for cleanness.
+
+def total_cost(routes, dist_matrix):
+    cost = 0
+    for i in range(len(routes)):
+        for j in range(len(routes[i]) - 1):
+            cost += dist_matrix[routes[i][j]][routes[i][j+1]]
+    
+    cost += len(routes) * vehicle_cost
+
+    return cost
 
 # Main function
 def main():
+
+    """ Change values for VND / Local Search """
+    flag = 1 # 0: VND, 1: LS
+
+    t1 = time()
 
     veh_num, capacity, custnum, coordx, coordy, demand, readytime, duedate, servicetime = read_txt_file("C:\\Users\\Pablo\\OneDrive - UNIVERSIDAD DE SEVILLA\\MOIGE\\CUATRI2\\MOPG\\Python\\07 CVRP\\CVRP\\Datos.txt")
 
@@ -279,7 +343,16 @@ def main():
 
     # best_route, best_distance = vnd_for_cvrp(initial_route, dict_xy)
 
-    routes, cargas = cvrp_solver(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
+    if flag == 0:
+        routes1, cargas1 = cvrp_solver_vnd(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
+        routes = routes1
+        cargas = cargas1
+    else:
+        routes2, cargas2 = cvrp_solver_ls(initial_route, dict_xy, distanceMatrix, veh_num, capacity, demand)
+        routes = routes2
+        cargas = cargas2
+
+    t2 = time()
 
     # Plotting the problem
     # plot_problem(dict_xy)
@@ -295,8 +368,11 @@ def main():
     plt.figure(2)
     plot_problem(dict_xy)
 
-    print("Routes:", routes)
+    print("Routes:", routes, "\n")
     plot_solution(routes, dict_xy)
+    print("Total cost: ", total_cost(routes, distanceMatrix), "\n")
+    # print("Distance Matrtix: ", distanceMatrix, "\n")
+    print("Execution time: ",   t2 - t1, "\n")
 
     plt.show()
     
